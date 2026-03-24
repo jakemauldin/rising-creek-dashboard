@@ -1,7 +1,6 @@
 const PAVE_URL = "https://api.jobtread.com/pave";
-const ORG_ID = "22NzKxPXx8Pf";
 
-export async function queryJobTread(query, variables = {}) {
+export async function queryJobTread(payload) {
   const token = process.env.JOBTREAD_GRANT_KEY;
   if (!token) {
     return { ok: false, error: "JOBTREAD_GRANT_KEY not set" };
@@ -14,11 +13,7 @@ export async function queryJobTread(query, variables = {}) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        organizationId: ORG_ID,
-        query,
-        variables,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!res.ok) {
@@ -34,28 +29,15 @@ export async function queryJobTread(query, variables = {}) {
 }
 
 export async function getJobs() {
-  return queryJobTread(`{
-    jobs(first: 25, sort: [{ field: "updatedAt", order: DESC }]) {
-      nodes {
-        id
-        name
-        number
-        status
-        statusColor
-        description
-        startDate
-        endDate
-        createdAt
-        updatedAt
-        customer {
-          id
-          name
-        }
-        estimatedCost
-        estimatedRevenue
-        actualCost
-        actualRevenue
-      }
-    }
-  }`);
+  return queryJobTread({
+    action: "READ",
+    object: "job",
+    data: {
+      id: true,
+      name: true,
+      number: true,
+      status: true,
+    },
+    limit: 20,
+  });
 }

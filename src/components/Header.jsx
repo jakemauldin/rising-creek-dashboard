@@ -1,33 +1,30 @@
 import { C, crd, inn } from "../lib/colors";
 import { IconClock } from "./Icons";
 import CommandBar from "./CommandBar";
-import { SYSTEMS, APPROVALS } from "../lib/seed-data";
 
 const TABS = [
   { k: "site", l: "Site" },
   { k: "systems", l: "Systems" },
   { k: "jobs", l: "Jobs" },
-  { k: "cash", l: "Cash" },
-  { k: "compliance", l: "Subs" },
   { k: "crew", l: "Crew" },
-  { k: "inbox", l: "Inbox" },
-  { k: "weather", l: "Weather" },
   { k: "costs", l: "Costs" },
   { k: "intel", l: "Intel" },
   { k: "expertise", l: "Growth" },
   { k: "roadmap", l: "Roadmap" },
 ];
 
-export default function Header({ view, setView, handleDispatch, agents, time, wsConnected, liveCount, healthData }) {
+export default function Header({ view, setView, handleDispatch, agents, time, wsConnected, liveCount, healthData, jobCount, clawStatus }) {
   const degradedCount = healthData?.live && healthData.data
     ? (typeof healthData.data === "object" ? Object.values(healthData.data).filter((v) => v === "degraded" || v === "warning").length : 0)
-    : SYSTEMS.filter((s) => s.status !== "healthy").length;
+    : 0;
+
+  const clawOk = clawStatus?.live;
 
   const stats = [
-    { l: "Automations", v: `${degradedCount} degraded`, c: "#DC2626" },
-    { l: "Approvals", v: `${APPROVALS.length} waiting`, c: "#F59E0B" },
-    { l: "Cash risk", v: "$72.3k", c: "#E8722A" },
-    { l: "Crew", v: `${agents.filter((a) => a.status === "active").length}/${agents.length} active`, c: "#2A9D8F" },
+    { l: "Health", v: healthData?.live ? `${degradedCount} issues` : "No data", c: healthData?.live ? (degradedCount > 0 ? "#DC2626" : "#2A9D8F") : "#64748B" },
+    { l: "Jobs", v: jobCount != null ? `${jobCount} active` : "No data", c: jobCount != null ? "#4A90D9" : "#64748B" },
+    { l: "OpenClaw", v: clawOk ? "Connected" : "Offline", c: clawOk ? "#2A9D8F" : "#64748B" },
+    { l: "Live Sources", v: `${liveCount}`, c: liveCount > 0 ? "#E8722A" : "#64748B" },
   ];
 
   return (

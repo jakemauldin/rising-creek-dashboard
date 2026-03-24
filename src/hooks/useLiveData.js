@@ -1,8 +1,4 @@
 import { useApi } from "./useApi";
-import {
-  SYSTEMS, CRONS_INIT, JOBS, AI_COSTS,
-  AGENTS_INIT, ALERTS_INIT, TIMELINE_INIT
-} from "../lib/seed-data";
 
 // ── Health / Systems ─────────────────────────────────────────
 export function useHealth() {
@@ -13,42 +9,18 @@ export function useHealth() {
 export function useJobs() {
   const result = useApi("/api/jobs", null, { interval: 120_000 });
 
-  // Transform JobTread response → match seed data shape
-  const jobs = result.live && result.data?.jobs?.nodes
-    ? result.data.jobs.nodes.map((j) => ({
+  // Transform Pave response into display shape
+  const jobs = result.live && Array.isArray(result.data)
+    ? result.data.map((j) => ({
         id: j.id,
-        name: j.name,
-        client: j.customer?.name || "—",
-        phase: j.status || "Active",
-        pct: j.estimatedRevenue > 0
-          ? Math.round((j.actualRevenue / j.estimatedRevenue) * 100)
-          : 0,
-        budget: formatCurrency(j.estimatedRevenue),
-        spent: formatCurrency(j.actualCost),
-        status: mapJTStatus(j.status),
-        nextMilestone: j.endDate
-          ? `Target: ${new Date(j.endDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })}`
-          : "—",
+        name: j.name || "Untitled",
+        number: j.number || "—",
+        status: j.status || "—",
         _raw: j,
       }))
-    : JOBS;
+    : null;
 
   return { ...result, jobs };
-}
-
-function formatCurrency(cents) {
-  if (!cents && cents !== 0) return "—";
-  const val = cents / 100;
-  if (val >= 1000) return `$${Math.round(val / 1000)}K`;
-  return `$${val.toLocaleString()}`;
-}
-
-function mapJTStatus(status) {
-  if (!status) return "on-track";
-  const s = status.toLowerCase();
-  if (s.includes("hold") || s.includes("delay")) return "delayed";
-  if (s.includes("complete") || s.includes("close")) return "complete";
-  return "on-track";
 }
 
 // ── OpenClaw status ──────────────────────────────────────────
@@ -83,7 +55,7 @@ export function useCrons() {
         schedule: c.schedule || c.cron,
         note: c.note,
       }))
-    : CRONS_INIT;
+    : null;
 
   return { ...result, crons };
 }

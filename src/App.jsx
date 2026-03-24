@@ -1,23 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
 import { C } from "./lib/colors";
-import { STATIONS, AGENTS_INIT, ALERTS_INIT, CRONS_INIT, TIMELINE_INIT } from "./lib/seed-data";
+import { STATIONS, AGENTS_INIT } from "./lib/seed-data";
 import { useJobs, useCrons, useHealth, useClawStatus, useInsights, useExpertise, useIntelligence } from "./hooks/useLiveData";
 import { useWebSocket } from "./hooks/useWebSocket";
 
 import Header from "./components/Header";
-import AlertRibbon from "./components/AlertRibbon";
 import DetailPanel from "./components/DetailPanel";
-import DecisionQueue from "./components/DecisionQueue";
 import Timeline from "./components/Timeline";
 
 import SitePlan from "./views/SitePlan";
 import SystemsView from "./views/Systems";
 import JobsView from "./views/Jobs";
-import CashFlowView from "./views/CashFlow";
-import ComplianceView from "./views/Compliance";
 import CrewView from "./views/Crew";
-import InboxView from "./views/Inbox";
-import WeatherView from "./views/Weather";
 import CostsView from "./views/Costs";
 import IntelligenceView from "./views/Intelligence";
 import ExpertiseView from "./views/Expertise";
@@ -26,15 +20,12 @@ import RoadmapView from "./views/Roadmap";
 export default function App() {
   const [view, setView] = useState("site");
   const [agents] = useState(AGENTS_INIT);
-  const [alerts, setAlerts] = useState(ALERTS_INIT);
   const [pos, setPos] = useState({});
   const [selAgent, setSelAgent] = useState(AGENTS_INIT[0]);
   const [buildProg, setBuildProg] = useState(52);
-  const [timeline, setTimeline] = useState(TIMELINE_INIT);
+  const [timeline, setTimeline] = useState([]);
   const [time, setTime] = useState(new Date());
   const [paused, setPaused] = useState(false);
-  const [qboTab, setQboTab] = useState("uncat");
-  const [expandedApproval, setExpandedApproval] = useState(null);
 
   // ── Live data hooks ──────────────────────────────────────
   const jobsData = useJobs();
@@ -110,7 +101,7 @@ export default function App() {
   const addTL = useCallback((msg, type = "action") => {
     setTimeline((prev) => [
       { t: new Date().toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }), msg, type },
-      ...prev.slice(0, 11),
+      ...prev.slice(0, 49),
     ]);
   }, []);
 
@@ -121,8 +112,7 @@ export default function App() {
   };
 
   const handleRunCron = (id) => {
-    const cronList = cronsData.crons;
-    const c = cronList.find((c) => c.id === id);
+    const c = cronsData.crons?.find((c) => c.id === id);
     addTL(`Running: ${c?.name || id}`);
   };
 
@@ -137,9 +127,8 @@ export default function App() {
           handleDispatch={handleDispatch} agents={agents} time={time}
           wsConnected={ws.connected} liveCount={liveCount}
           healthData={healthData} clawStatus={clawStatus}
+          jobCount={jobsData.jobs?.length ?? null}
         />
-
-        <AlertRibbon alerts={alerts} setAlerts={setAlerts} addTL={addTL} />
 
         {/* Main grid — mobile: stacked, desktop: 2-col */}
         <div className="flex flex-col lg:grid lg:grid-cols-[1.4fr_0.6fr] gap-4">
@@ -147,11 +136,7 @@ export default function App() {
             {view === "site" && <SitePlan agents={agents} pos={pos} selAgent={selAgent} setSelAgent={setSelAgent} buildProg={buildProg} paused={paused} setPaused={setPaused} liveCount={liveCount} healthData={healthData} />}
             {view === "systems" && <SystemsView crons={cronsData.crons} handleRunCron={handleRunCron} healthData={healthData} cronsLive={cronsData.live} />}
             {view === "jobs" && <JobsView jobs={jobsData.jobs} live={jobsData.live} loading={jobsData.loading} />}
-            {view === "cash" && <CashFlowView qboTab={qboTab} setQboTab={setQboTab} addTL={addTL} />}
-            {view === "compliance" && <ComplianceView addTL={addTL} />}
             {view === "crew" && <CrewView agents={agents} selAgent={selAgent} setSelAgent={setSelAgent} />}
-            {view === "inbox" && <InboxView addTL={addTL} />}
-            {view === "weather" && <WeatherView />}
             {view === "costs" && <CostsView />}
             {view === "intel" && <IntelligenceView insights={insights} intelligence={intelligence} clawStatus={clawStatus} />}
             {view === "expertise" && <ExpertiseView expertise={expertise} />}
@@ -161,7 +146,6 @@ export default function App() {
           {/* Right column */}
           <div className="flex flex-col gap-4">
             <DetailPanel selAgent={selAgent} pos={pos} clawStatus={clawStatus} />
-            <DecisionQueue expandedApproval={expandedApproval} setExpandedApproval={setExpandedApproval} addTL={addTL} />
             <Timeline timeline={timeline} wsConnected={ws.connected} />
           </div>
         </div>
