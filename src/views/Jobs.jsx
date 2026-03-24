@@ -11,7 +11,7 @@ export default function JobsView({ jobs, live, loading }) {
           background: live ? "#2A9D8F" : "#64748B",
         }} />
         <span style={{ fontSize: 10, color: C.dim }}>
-          {loading ? "Loading from JobTread..." : live ? "Live from JobTread Pave API" : "Not connected — check JOBTREAD_GRANT_KEY"}
+          {loading ? "Loading from JobTread..." : live ? `Live from JobTread — ${jobs?.length || 0} jobs` : "Not connected — check JOBTREAD_GRANT_KEY"}
         </span>
       </div>
 
@@ -26,11 +26,18 @@ export default function JobsView({ jobs, live, loading }) {
                 </div>
                 <span style={{
                   fontSize: 10, padding: "3px 10px", borderRadius: 8, fontWeight: 600,
-                  background: "rgba(255,255,255,0.04)", border: `1px solid ${C.bdr}`,
-                  color: C.text, textTransform: "capitalize",
+                  background: j.closedOn ? "rgba(42,157,143,0.08)" : "rgba(74,144,217,0.08)",
+                  border: `1px solid ${j.closedOn ? "rgba(42,157,143,0.25)" : "rgba(74,144,217,0.25)"}`,
+                  color: j.closedOn ? "#A7F3D0" : "#93C5FD",
                 }}>
-                  {j.status}
+                  {j.closedOn ? "Closed" : "Open"}
                 </span>
+              </div>
+              {j.description && (
+                <p style={{ margin: "6px 0 0", fontSize: 11, color: "#94A3B8", lineHeight: 1.5 }}>{j.description}</p>
+              )}
+              <div style={{ marginTop: 6, fontSize: 9, color: C.dim }}>
+                {j.closedOn ? `Closed ${new Date(j.closedOn).toLocaleDateString()}` : `Created ${new Date(j.createdAt).toLocaleDateString()}`}
               </div>
             </div>
           ))}

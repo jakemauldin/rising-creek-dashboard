@@ -1,6 +1,7 @@
 const PAVE_URL = "https://api.jobtread.com/pave";
+const ORG_ID = "22NzKxPXx8Pf";
 
-export async function queryJobTread(payload) {
+export async function queryJobTread(query) {
   const token = process.env.JOBTREAD_GRANT_KEY;
   if (!token) {
     return { ok: false, error: "JOBTREAD_GRANT_KEY not set" };
@@ -13,7 +14,7 @@ export async function queryJobTread(payload) {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ query }),
     });
 
     if (!res.ok) {
@@ -29,15 +30,29 @@ export async function queryJobTread(payload) {
 }
 
 export async function getJobs() {
-  return queryJobTread({
-    action: "READ",
-    object: "job",
-    data: {
-      id: true,
-      name: true,
-      number: true,
-      status: true,
+  const result = await queryJobTread({
+    organization: {
+      $: { id: ORG_ID },
+      jobs: {
+        nodes: {
+          id: true,
+          name: true,
+          number: true,
+          description: true,
+          closedOn: true,
+          createdAt: true,
+        },
+      },
     },
-    limit: 20,
   });
+
+  if (!result.ok) return result;
+
+  // Extract the nodes array from the nested response
+  const nodes = result.data?.organization?.jobs?.nodes;
+  if (Array.isArray(nodes)) {
+    return { ok: true, data: nodes };
+  }
+
+  return { ok: true, data: result.data };
 }

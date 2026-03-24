@@ -15,7 +15,9 @@ export function useJobs() {
         id: j.id,
         name: j.name || "Untitled",
         number: j.number || "—",
-        status: j.status || "—",
+        description: j.description || "",
+        closedOn: j.closedOn,
+        createdAt: j.createdAt,
         _raw: j,
       }))
     : null;
