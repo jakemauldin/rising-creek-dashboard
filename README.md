@@ -2,6 +2,17 @@
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
+## Claude Code MCP CLI
+
+Quick reference for managing MCP servers from the Claude Code CLI:
+
+```bash
+claude mcp list                                    # see what's wired
+claude mcp add <name> --scope user <args>          # add globally (persists)
+claude mcp remove <name> --scope user              # uninstall globally
+claude mcp get <name>                              # show details for one
+```
+
 Currently, two official plugins are available:
 
 - [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
